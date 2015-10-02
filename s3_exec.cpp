@@ -5,61 +5,60 @@
 #include <unistd.h>
 #include <wait.h>
 
-using namespace std;
+using std::string;
+using std::stringstream;
+using std::vector;
+using std::cin;
+using std::cout;
+using std::allocator;
 
-/*
- * Хоть программа и простая, но разбейте ей на ф-и: считывание и запуск.
- */
+void scan_task(int &time, string &name, vector<char*> &argv)
+{
+	cin >> time;
+	cin >> name;
+	argv.push_back((char*)malloc(1 + name.size()));
+	memcpy(argv.back(), name.c_str(), name.size());
+	
+	string tmp;
+	getline(cin, tmp);
+	stringstream parser(tmp);
+	while(parser >> tmp)
+	{
+		argv.push_back((char*)malloc(1 + tmp.size()));
+		memcpy(argv.back(), tmp.c_str(), tmp.size());
+	}
+	argv.push_back(NULL);
+}
+
+int start_task(int time, string &name, vector<char*> &argv)
+{	
+	pid_t pid = fork();
+	if(pid == 0)
+	{
+		sleep(time);
+		cout << "Process " << getpid() << " started.\n";
+		execvp(name.c_str(), allocator<char*>().address(*argv.begin()));
+	}
+	return pid;
+}
 
 int main()
 {
-	freopen("input.txt", "r", stdin);
-/*
- * Вы не на контесте, называйте переменные более осмысленно (tasksCount, например, а не n) и т.д.
- */
-	int n;
-	cin >> n;
-	for(int i = 0; i < n; i++)
+	int task_count;
+	cin >> task_count;
+	vector<int> wait;
+	for(int i = 0; i < task_count; i++)
 	{
 		int time;
-		cin >> time;
-		
 		string name;
-		cin >> name;
-		
-		string tmp;
-		getline(cin, tmp);
-		stringstream sstream;
-		sstream << tmp;
-		vector<string> argv_v(1, name);
-		while(sstream >> tmp)
-			argv_v.push_back(tmp);
-		int n = argv_v.size();
-    
-/*
- * Зачем вам вдвое больше памяти, чем необходимо? Поправьте.
- */
-		char **argv = (char**)malloc((n + 1) * sizeof(char*));
-		for(int i = 0; i < n; i++)
-		{
-			argv[i] = (char*)malloc(1 + argv_v[i].size());
-			memcpy(argv[i], argv_v[i].c_str(), argv_v[i].size());
-		}
-		argv[n] = NULL;
-		pid_t pid = fork();
-		if(pid == 0)
-		{
-			sleep(time);
-			execvp(name.c_str(), argv);
-		}
-		else
-		{
-			for(int i = 0; i <= n; i++)
-				free(argv[i]);
-			free(argv);
-		}
+		vector<char*> argv;
+		scan_task(time, name, argv);
+		wait.push_back(start_task(time, name, argv));
 	}
-/*
- * Пусть родительский процесс дождётся завершения всех дочерних и выведет статусы их завершения.
- */
+	for(auto task: wait)
+	{
+		int status;
+		waitpid(task, &status, 0);
+		cout << "Process " << task << " terminated with exit status " << status << ".\n";
+	}
 }
