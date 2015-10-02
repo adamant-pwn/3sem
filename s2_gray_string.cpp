@@ -2,6 +2,14 @@
 #include <string.h>
 #include <stdio.h>
 
+/*
+ * Совсем не круто подключать все пространство имён целиком.
+ * Вы из него ничего не используете.
+ * Обычно если используют пару классов, то пишут их отдельно:
+ * using std::vector;
+ * using std::string;
+ */
+
 using namespace std;
 
 void generate_string(int n, char* string)

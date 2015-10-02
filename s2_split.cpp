@@ -4,6 +4,10 @@
 
 using namespace std;
 
+/*
+ * Нормально. Посмотрите тут заодно http://stackoverflow.com/questions/236129/split-a-string-in-c
+ */
+
 vector<string> split(string str, string delim)
 {
 	vector<string> ret;

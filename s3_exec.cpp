@@ -7,9 +7,16 @@
 
 using namespace std;
 
+/*
+ * Хоть программа и простая, но разбейте ей на ф-и: считывание и запуск.
+ */
+
 int main()
 {
 	freopen("input.txt", "r", stdin);
+/*
+ * Вы не на контесте, называйте переменные более осмысленно (tasksCount, например, а не n) и т.д.
+ */
 	int n;
 	cin >> n;
 	for(int i = 0; i < n; i++)
@@ -28,6 +35,10 @@ int main()
 		while(sstream >> tmp)
 			argv_v.push_back(tmp);
 		int n = argv_v.size();
+    
+/*
+ * Зачем вам вдвое больше памяти, чем необходимо? Поправьте.
+ */
 		char **argv = (char**)malloc((n + 1) * sizeof(char*));
 		for(int i = 0; i < n; i++)
 		{
@@ -48,4 +59,7 @@ int main()
 			free(argv);
 		}
 	}
+/*
+ * Пусть родительский процесс дождётся завершения всех дочерних и выведет статусы их завершения.
+ */
 }
