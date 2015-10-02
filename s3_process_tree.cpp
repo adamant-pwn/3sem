@@ -35,8 +35,8 @@ int main()
 	cin >> n;
 	g.resize(n);
 	/*
-	 * edge list.
-	 * root = 0
+	 * edge list, 1-based. Numbers of vertices from 1 to n.
+	 * root = 1
 	 * */
 	for(int i = 0; i < n - 1; i++)
 	{
