@@ -23,5 +23,5 @@ int main()
 	generate_string(n, ans);
 	puts(ans);
 	free(ans);
-    return 0;
+	return 0;
 }
