@@ -45,5 +45,5 @@ int main()
 	semctl(semid, IPC_RMID, NULL);
 	std::cout << "Final counter value: " << counter << "\n";
 	std::cout << "Expected: " << 2 * bound << "\n";
-    return 0;
+	return 0;
 }
