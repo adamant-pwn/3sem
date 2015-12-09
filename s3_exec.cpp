@@ -19,8 +19,6 @@ struct Task
 	vector<string> argv;
 };
 
-using namespace std;
-
 void scan_task(Task &task)
 {
 	cin >> task.time;
@@ -33,7 +31,7 @@ void scan_task(Task &task)
 		task.argv.push_back(tmp);
 }
 
-int start_task(Task &task)
+int start_task(const Task &task)
 {
 	vector<char*> argv;
 	for(auto &it: task.argv)
