@@ -11,19 +11,20 @@ key_t key;
 int semid;
 const int bound = 1e6;
 
+
 void *add(void* arg)
 {
+	
 	sembuf mybuf; 
 	mybuf.sem_flg = 0;
 	mybuf.sem_num = 0;
-	
 	bool type = *(bool*)arg;
 	for(int i = 0; i < bound; i++)
 	{
-		mybuf.sem_op = (type ? 0 : -1);
+		mybuf.sem_op = -1;
 		semop(semid, &mybuf, 1);
 		counter++;
-		mybuf.sem_op = (type ? 2 : -1);
+		mybuf.sem_op = 1;
 		semop(semid, &mybuf, 1);
 		
 	}
@@ -35,6 +36,11 @@ int main()
 	semid = semget(key , 1, 0666 | IPC_CREAT);
 	semctl(semid, IPC_RMID, NULL);
 	semid = semget(key , 1, 0666 | IPC_CREAT);
+	sembuf mybuf; 
+	mybuf.sem_flg = 0;
+	mybuf.sem_num = 0;
+	mybuf.sem_op = 1;
+	semop(semid, &mybuf, 1);
 	
 	bool tp[2] = {0, 1};
 	pthread_t id[2];
