@@ -1,0 +1,5 @@
+dish : 2
+square : 3
+square : 2
+circle : 5
+triangle : 2
