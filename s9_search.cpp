@@ -9,15 +9,11 @@
 using std::cout;
 using std::string;
 
-/*
- * Ваша программа не заходит во вложенные директории.
- * По крайней мере, файлы во вложенных директориях не находит.
- */
-
 void search(string path, int depth, string needle)
 {
 	if(depth < 0)
 		return;
+	cout << "Search in \"" << path << "\" for \"" << needle << "\". Allowed depth: " << depth << "\n";
 	DIR *dir = opendir(path.c_str());
 	dirent *file;
 	while(file = readdir(dir))
@@ -30,7 +26,7 @@ void search(string path, int depth, string needle)
 			exit(0);
 		}
 		struct stat info;
-		stat(file->d_name, &info);
+		stat((path + "/" + file->d_name).c_str(), &info);
 		if(S_ISDIR(info.st_mode))
 			search(path + "/" + file->d_name, depth - 1, needle);
 	}
