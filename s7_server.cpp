@@ -31,6 +31,9 @@ void *thread(void *arg)
 	mybuf.type += maxn;
 	mybuf.num[0] *= mybuf.num[1];
 	msgsnd(msgid, &mybuf, sizeof(mybuf.num), 0);
+	/*
+	 * Метод push_back не thread-safety, поэтому такой вариант не подходит.
+	 */
 	available.push_back(mybuf.type - maxn);
 }
 	

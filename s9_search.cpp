@@ -4,9 +4,15 @@
 #include <dirent.h>
 #include <iostream>
 #include <sys/stat.h>
+#include <stdlib.h>
 
 using std::cout;
 using std::string;
+
+/*
+ * Ваша программа не заходит во вложенные директории.
+ * По крайней мере, файлы во вложенных директориях не находит.
+ */
 
 void search(string path, int depth, string needle)
 {

@@ -13,6 +13,10 @@ using std::string;
 using std::cout;
 using std::ifstream;
 
+/*
+ * Нужно будет рассказать устно, как устроена работа с разделяемой памятью.
+ */
+
 int main()
 {
 	key_t key = ftok("shm_size", 0);
