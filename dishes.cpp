@@ -16,6 +16,8 @@
 #include <deque>
 #include <assert.h>
 #include <sys/msg.h>
+#include <unistd.h>
+#include <wait.h>
 
 using std::cout;
 using std::string;
@@ -51,18 +53,11 @@ map<string, dish> dishes;
 
 const int table_limit = 10;
 
-
-/*
- * FIXIT:
- * 1) В названии ф-и должен присутствовать глагол.
- * Структуры или переменных называете как раз существительными.
- * 2) Главное замечание. Вы используете механизмы межпроцессного взаимодейстия для коммуникации между нитями.
- * Мне кажется, вы немного запутались в отличие процессов от нитей. Постарайте осмыслить отличия, т.к. нет необходимости в случае нитей
- * использовать очереди сообщений и т.п., т.к. нити итак живут в одном адресном пространстве.
- */
-void *table(void *arg)
+pid_t start_table(int type)
 {
-	int type = *(int*)arg;
+	pid_t pid = fork();
+	if(pid != 0)
+		return pid;
 	dish dishes[table_limit];
 	deque<int> free_pos;
 	deque<int> busy_pos;
@@ -137,6 +132,7 @@ void *table(void *arg)
 			}
 		}
 	} // ---------------------------------------------------
+	exit(0);
 }
 
 void put_dish(dish cur, int type)
@@ -199,9 +195,11 @@ void process(dish cur, int type)
 	put_dish(cur, type + 1);
 }
 
-void *worker(void *arg)
+pid_t start_worker(int type)
 {
-	int type = *(int*)arg;
+	pid_t pid = fork();
+	if(pid != 0)
+		return pid;
 	while(true)
 	{
 		dish cur = take_dish(type);
@@ -210,6 +208,7 @@ void *worker(void *arg)
 			break;
 		cout << "Dish #" << cur.num << " is " << (type ? "wiped" : "washed") << " and put on the table.\n";
 	}
+	exit(0);
 }
 
 void init()
@@ -249,14 +248,11 @@ int main(int argc, char *argv[])
 {
 	communicate_type = atoi(argv[1]);
 	init();
-	
-	pthread_t id[4];
-	int washer = 0, wiper = 1;
-	int dirt = 0, clean = 1;
-	pthread_create(&id[0], NULL, worker, &washer);
-	pthread_create(&id[1], NULL, worker, &wiper);
-	pthread_create(&id[2], NULL, table, &dirt);
-	pthread_create(&id[3], NULL, table, &clean);
+	pid_t id[4];
+	id[0] = start_table(0);
+	id[1] = start_table(1);
+	id[2] = start_worker(0);
+	id[3] = start_worker(1);
 	std::ifstream d_type_list("type.txt");
 	std::ifstream d_query_list("query.txt");
 	string dish_name, colon;
@@ -282,7 +278,10 @@ int main(int argc, char *argv[])
 	finish.time[0] = finish.time[1] = 0;
 	put_dish(finish, 0);
 	for(int i = 0; i < 4; i++)
-		pthread_join(id[i], 0);
+	{
+		int status;
+		waitpid(id[i], &status, 0);
+	}
 	cout << "All dishes are washed and wiped! Good bye!\n";
 	return 0;
 }
