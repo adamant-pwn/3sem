@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <algorithm>
+#include <mutex>
 
 #define LAST_MESSAGE 255 
 
@@ -14,7 +15,31 @@ using std::cin;
 using std::vector;
 
 const int maxn = 10;
-vector<int> available;
+
+
+class locked_vector : vector<int>
+{
+	std::mutex vector_mutex;
+	public:
+	void safety_push_back(int elem)
+	{
+		vector_mutex.lock();
+		this->push_back(elem);
+		vector_mutex.unlock();
+	}
+	
+	int safety_pop()
+	{
+		while(this->empty());
+		vector_mutex.lock();
+		int ret = this->back();
+		this->pop_back();
+		vector_mutex.unlock();
+		return ret;
+	}
+};
+
+locked_vector available;
 
 key_t key = ftok("shared_memory", 0); 
 int msgid = msgget(key, 0666 | IPC_CREAT);
@@ -31,10 +56,7 @@ void *thread(void *arg)
 	mybuf.type += maxn;
 	mybuf.num[0] *= mybuf.num[1];
 	msgsnd(msgid, &mybuf, sizeof(mybuf.num), 0);
-	/*
-	 * Метод push_back не thread-safety, поэтому такой вариант не подходит.
-	 */
-	available.push_back(mybuf.type - maxn);
+	available.safety_push_back(mybuf.type - maxn);
 }
 	
 int main()
@@ -44,17 +66,15 @@ int main()
 	mymsgbuf mybuf;
 	
 	for(int i = 3; i < maxn; i++)
-		available.push_back(i);
+		available.safety_push_back(i);
 	
 	while(1)
 	{
 		msgrcv(msgid, &mybuf, sizeof(mybuf.num), -maxn, 0);
 		if(mybuf.type == 1)
 		{
-			while(available.empty());
 			mybuf.type = maxn + 1;
-			mybuf.num[0] = available.back();
-			available.pop_back();
+			mybuf.num[0] = available.safety_pop();
 			msgsnd(msgid, &mybuf, sizeof(mybuf.num), 0);
 		}
 		else
